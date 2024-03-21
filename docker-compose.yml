@@ -46,10 +46,33 @@ services:
     image: postgres:16.2
     restart: always
     volumes:
-      - ./orders-ms/postgres:/var/lib/postgresql/data
+      - orders_db_data:/var/lib/postgresql/data
     ports: 
       - 5432:5432
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=123456
       - POSTGRES_DB=ordersdb
+
+  # =====================
+  # payments microservice
+  # =====================
+
+  payments-ms:
+    build: ./payments-ms
+    volumes:
+      - ./payments-ms/src:/usr/src/app/src
+    command: npm run start:dev
+    ports:
+      - ${PAYMENYS_MS_PORT}:${PAYMENYS_MS_PORT}
+    environment:
+      - PORT=${PAYMENYS_MS_PORT}
+      - NATS_SERVERS=nats://nats-server:4222
+      - STRIPE_SECRET=${STRIPE_SECRET}
+      - STRIPE_SUCCESS_URL=${STRIPE_SUCCESS_URL}
+      - STRIPE_CANCEL_URL=${STRIPE_CANCEL_URL}
+      - STRIPE_ENDPOINT_SECRET=${STRIPE_ENDPOINT_SECRET}
+
+volumes:
+  orders_db_data:
+    driver: local
